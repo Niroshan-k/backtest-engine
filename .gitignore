@@ -1,0 +1,17 @@
+# Visual Studio temporary files
+.vs/
+x64/
+x86/
+Debug/
+Release/
+*.user
+*.suo
+*.db
+
+# Build artifacts (Junk)
+*.obj
+*.pdb
+*.ilk
+*.tlog
+*.idb
+*.exe
