@@ -15,6 +15,7 @@ class Portfolio {
 public:
     double cash;
     int shares;
+    int trade_count;
 
     // NEW: Risk Metrics
     double initial_cash;
@@ -24,6 +25,7 @@ public:
     Portfolio(double start_cash) {
         cash = start_cash;
         shares = 0;
+        trade_count = 0;
 
         // Initialize metrics
         initial_cash = start_cash;
@@ -35,6 +37,7 @@ public:
         if (cash >= price) {
             cash -= price;
             shares++;
+            trade_count++;
         }
         update_metrics(price); // Check risk after every trade
     }
@@ -43,6 +46,7 @@ public:
         if (shares > 0) {
             cash += price;
             shares--;
+            trade_count++;
         }
         update_metrics(price);
     }
@@ -89,5 +93,55 @@ public:
         if (price < 100.0) return "BUY";
         if (price > 101.0) return "SELL";
         return "HOLD";
+    }
+};
+
+// 4. THE ENGINE (The Manager)
+class BacktestEngine {
+private:
+    std::vector<MarketBar> data;
+    Portfolio portfolio;
+    Strategy* strategy; // Pointer to the generic strategy
+
+public:
+    // Constructor: Needs data, a starting cash amount, and a strategy
+    BacktestEngine(std::vector<MarketBar>& input_data, double start_cash, Strategy* input_strategy)
+        : data(input_data), portfolio(start_cash), strategy(input_strategy) {}
+
+    // The Main Function: This replaces your loop in main()
+    void run() {
+        std::cout << "--- ENGINE STARTING ---" << std::endl;
+
+        for (const auto& bar : data) {
+            // 1. Ask Strategy
+            std::string signal = strategy->check_signal(bar.price);
+
+            // 2. Execute
+            if (signal == "BUY") {
+                portfolio.buy(bar.price);
+                // Optional: Print only if you want verbose logs
+                // std::cout << "[BUY] " << bar.date << " @ " << bar.price << std::endl; 
+            }
+            else if (signal == "SELL") {
+                portfolio.sell(bar.price);
+            }
+        }
+    }
+
+    // Helper to get results
+    void print_report() {
+        double final_val = portfolio.get_total_value(data.back().price);
+        std::cout << "\n--- FINAL REPORT ---" << std::endl;
+        std::cout << "Final Value: $" << final_val << std::endl;
+        std::cout << "Max Drawdown: " << (portfolio.max_drawdown * 100) << "%" << std::endl;
+        std::cout << "Profit: $" << (final_val - portfolio.initial_cash) << std::endl;
+    }
+
+    double get_final_balance() {
+        return portfolio.get_total_value(data.back().price);
+    }
+
+    int get_total_trades() {
+        return portfolio.trade_count;
     }
 };

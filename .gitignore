@@ -15,3 +15,8 @@ Release/
 *.tlog
 *.idb
 *.exe
+
+# Python
+venv/
+__pycache__/
+*.pyc
