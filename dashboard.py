@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import trading_engine as cpp
 import pandas as pd
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="Quant C++ Engine", layout="wide")
 st.title("⚡ C++ High-Frequency Trading Engine")
@@ -68,4 +69,27 @@ if st.sidebar.button("Run Simulation"):
     col3.metric("Trades Executed", trade_count)
     
     st.subheader(f"Price History: {ticker}")
-    st.line_chart(df['Close'])
+    
+    # --- DISPLAY CANDLESTICK CHART ---
+    st.subheader(f"Market Analysis: {ticker}")
+
+    # Create the fancy chart
+    fig = go.Figure(data=[go.Candlestick(
+        x=df.index,
+        open=df['Open'],
+        high=df['High'],
+        low=df['Low'],
+        close=df['Close'],
+        name=ticker
+    )])
+
+    # Make it look nice
+    fig.update_layout(
+        title=f"{ticker} Price History",
+        yaxis_title="Price (USD)",
+        xaxis_rangeslider_visible=False, # Hide the bottom slider to save space
+        height=500
+    )
+
+    # Add key="market_chart" to fix the crash
+    st.plotly_chart(fig, use_container_width=True, key="market_chart")
